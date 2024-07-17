@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityBuilderAction
 {
-  static class Builder
+  public static class Builder
   {
     public static void BuildProject()
     {
@@ -19,7 +19,7 @@ namespace UnityBuilderAction
 
       // Gather values from project
       var scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(s => s.path).ToArray();
-      
+
       // Get all buildOptions from options
       BuildOptions buildOptions = BuildOptions.None;
       foreach (string buildOptionString in Enum.GetNames(typeof(BuildOptions))) {
@@ -50,14 +50,14 @@ namespace UnityBuilderAction
 
       // Set version for this build
       VersionApplicator.SetVersion(options["buildVersion"]);
-      
+
       // Apply Android settings
       if (buildPlayerOptions.target == BuildTarget.Android)
       {
         VersionApplicator.SetAndroidVersionCode(options["androidVersionCode"]);
         AndroidSettings.Apply(options);
       }
-      
+
       // Execute default AddressableAsset content build, if the package is installed.
       // Version defines would be the best solution here, but Unity 2018 doesn't support that,
       // so we fall back to using reflection instead.

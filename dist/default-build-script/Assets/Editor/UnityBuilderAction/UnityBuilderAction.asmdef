@@ -1,5 +1,6 @@
 {
     "name": "UnityBuilderAction",
+    "rootNamespace": "",
     "references": [],
     "includePlatforms": [
         "Editor"
@@ -9,7 +10,9 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }
