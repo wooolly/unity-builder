@@ -3,6 +3,11 @@ name: Cloud Runner CI Pipeline
 on:
   push: { branches: [cloud-runner-develop, cloud-runner-preview, main] }
   workflow_dispatch:
+    inputs:
+      runGithubIntegrationTests:
+        description: 'Run GitHub Checks integration tests'
+        required: false
+        default: 'false'
 
 permissions:
   checks: write
@@ -190,6 +195,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           GIT_PRIVATE_TOKEN: ${{ secrets.GIT_PRIVATE_TOKEN }}
@@ -201,8 +207,25 @@ jobs:
           providerStrategy: ${{ matrix.providerStrategy }}
       - run: |
           cp ./cloud-runner-cache/cache/${{ steps.unity-build.outputs.CACHE_KEY }}/build/${{ steps.unity-build.outputs.BUILD_ARTIFACT }} ${{ steps.unity-build.outputs.BUILD_ARTIFACT }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.providerStrategy }} Build (${{ matrix.targetPlatform }})
           path: ${{ steps.unity-build.outputs.BUILD_ARTIFACT }}
           retention-days: 14
+
+  githubChecksIntegration:
+    name: GitHub Checks Integration
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.runGithubIntegrationTests == 'true'
+    env:
+      RUN_GITHUB_INTEGRATION_TESTS: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+      - run: yarn test cloud-runner-github-checks-integration-test --detectOpenHandles --forceExit --runInBand
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

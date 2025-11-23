@@ -101,7 +101,10 @@ class SetupMac {
         moduleArgument.push('--module', 'ios');
         break;
       case 'tvOS':
-        moduleArgument.push('--module', 'tvos');
+        moduleArgument.push('--module', 'appletv');
+        break;
+      case 'VisionOS':
+        moduleArgument.push('--module', 'visionos');
         break;
       case 'StandaloneOSX':
         moduleArgument.push('--module', 'mac-il2cpp');
@@ -170,6 +173,7 @@ class SetupMac {
     process.env.UNITY_LICENSING_SERVER = buildParameters.unityLicensingServer;
     process.env.SKIP_ACTIVATION = buildParameters.skipActivation;
     process.env.PROJECT_PATH = buildParameters.projectPath;
+    process.env.BUILD_PROFILE = buildParameters.buildProfile;
     process.env.BUILD_TARGET = buildParameters.targetPlatform;
     process.env.BUILD_NAME = buildParameters.buildName;
     process.env.BUILD_PATH = buildParameters.buildPath;
