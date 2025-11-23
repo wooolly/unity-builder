@@ -17,6 +17,25 @@ Write-Output "$('Using build name "')$($Env:BUILD_NAME)$('".')"
 Write-Output "$('Using build target "')$($Env:BUILD_TARGET)$('".')"
 
 #
+# Display the build profile
+#
+
+if ($Env:BUILD_PROFILE)
+{
+  # User has provided a path to a build profile `.asset` file
+  #
+  Write-Output "$('Using build profile "')$($Env:BUILD_PROFILE)$('" relative to "')$($Env:UNITY_PROJECT_PATH)$('".')"
+  #
+}
+else
+{
+  # User has not provided a build profile
+  #
+  Write-Output "$('Doing a default "')$($Env:BUILD_TARGET)$('" platform build.')"
+  #
+}
+
+#
 # Display build path and file
 #
 
@@ -129,20 +148,27 @@ Write-Output "#    Building project     #"
 Write-Output "###########################"
 Write-Output ""
 
+$unityGraphics = "-nographics"
+
+if ($LLVMPIPE_INSTALLED -eq "true")
+{
+  $unityGraphics = "-force-opengl"
+}
+
 # If $Env:CUSTOM_PARAMETERS contains spaces and is passed directly on the command line to Unity, powershell will wrap it
 # in double quotes.  To avoid this, parse $Env:CUSTOM_PARAMETERS into an array, while respecting any quotations within the string.
 $_, $customParametersArray = Invoke-Expression('Write-Output -- "" ' + $Env:CUSTOM_PARAMETERS)
 $unityArgs = @(
     "-quit",
     "-batchmode",
-    "-nographics",
+    $unityGraphics,
     "-silent-crashes",
     "-customBuildName", "`"$Env:BUILD_NAME`"",
     "-projectPath", "`"$Env:UNITY_PROJECT_PATH`"",
     "-executeMethod", "`"$Env:BUILD_METHOD`"",
-    "-buildTarget", "`"$Env:BUILD_TARGET`"",
     "-customBuildTarget", "`"$Env:BUILD_TARGET`"",
     "-customBuildPath", "`"$Env:CUSTOM_BUILD_PATH`"",
+    "-customBuildProfile", "`"$Env:BUILD_PROFILE`"",
     "-buildVersion", "`"$Env:VERSION`"",
     "-androidVersionCode", "`"$Env:ANDROID_VERSION_CODE`"",
     "-androidKeystorePass", "`"$Env:ANDROID_KEYSTORE_PASS`"",
@@ -153,6 +179,13 @@ $unityArgs = @(
     "-androidSymbolType", "`"$Env:ANDROID_SYMBOL_TYPE`"",
     "-logfile", "-"
 ) + $customParametersArray
+
+if (-not $Env:BUILD_PROFILE) {
+    $unityArgs += @("-buildTarget", "`"$Env:BUILD_TARGET`"")
+}
+if ($Env:BUILD_PROFILE) {
+    $unityArgs += @("-activeBuildProfile", "`"$Env:BUILD_PROFILE`"")
+}
 
 # Remove null items as that will fail the Start-Process call
 $unityArgs = $unityArgs | Where-Object { $_ -ne $null }
